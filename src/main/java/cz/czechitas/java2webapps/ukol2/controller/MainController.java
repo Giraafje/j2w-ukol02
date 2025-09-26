@@ -17,12 +17,14 @@ import java.util.stream.Collectors;
 public class MainController {
   private final Random random = new Random();
 
+  // Adjusting the main page, therefore the route is "/"
   @GetMapping("/")
   public ModelAndView dynamic() throws IOException {
     ModelAndView modelAndView = new ModelAndView("dynamic");
     List<String> quotes = readAllLines("citaty.txt");
     int randomNumber = getRandomNumber(quotes.size());
     modelAndView.addObject("quote", quotes.get(randomNumber));
+    modelAndView.addObject("imageNumber", getRandomNumber(10) + 1);
     return modelAndView;
   }
 
