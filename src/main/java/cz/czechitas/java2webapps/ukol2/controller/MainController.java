@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -16,31 +17,34 @@ import java.util.stream.Collectors;
 @Controller
 public class MainController {
   private final Random random = new Random();
+  private final List<String> quotes = readAllLines("citaty.txt");
 
   // Adjusting the main page, therefore the route is "/"
   @GetMapping("/")
   public ModelAndView dynamic() throws IOException {
     ModelAndView modelAndView = new ModelAndView("dynamic");
-    List<String> quotes = readAllLines("citaty.txt");
     int randomNumber = getRandomNumber(quotes.size());
     modelAndView.addObject("quote", quotes.get(randomNumber));
     modelAndView.addObject("imageNumber", getRandomNumber(10) + 1);
     return modelAndView;
   }
 
-  private static List<String> readAllLines(String resource) throws IOException {
+  private static List<String> readAllLines(String resource) {
     //Soubory z resources se získávají pomocí classloaderu. Nejprve musíme získat aktuální classloader.
     ClassLoader classLoader=Thread.currentThread().getContextClassLoader();
 
     //Pomocí metody getResourceAsStream() získáme z classloaderu InpuStream, který čte z příslušného souboru.
     //Následně InputStream převedeme na BufferedRead, který čte text v kódování UTF-8
-    try(InputStream inputStream=classLoader.getResourceAsStream(resource);
-        BufferedReader reader=new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))){
-
-      //Metoda lines() vrací stream řádků ze souboru. Pomocí kolektoru převedeme Stream<String> na List<String>.
+    try(
+        InputStream inputStream = classLoader.getResourceAsStream(resource);
+        InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+        BufferedReader reader = new BufferedReader(inputStreamReader)
+    ){
       return reader
-          .lines()
-          .collect(Collectors.toList());
+          .lines()                        // Metoda lines() vrací stream řádků ze souboru.
+          .collect(Collectors.toList());  // Pomocí kolektoru převedeme Stream<String> na List<String>.
+    } catch (IOException e) {
+      throw new RuntimeException("Nepodařilo se načíst soubor " + resource, e);
     }
   }
 
